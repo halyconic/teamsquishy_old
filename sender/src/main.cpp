@@ -10,8 +10,27 @@
 #include <stdlib.h> //exit
 #include <stdio.h>
 
+//#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
+#include <netdb.h>
+//#include <stdio.h>
+//#include <unistd.h>
+//#include <errno.h>
+#include <string.h>
+#include <cstdlib> //strtol
+
+/*
+ * TODO:
+ *   Comment!
+ */
 int main(int argc, char **argv)
 {
+	/*
+	 * Handle inputs
+	 */
+
 	// If no commands, do nothing
 	if (argc <= 1)
 	{
@@ -20,30 +39,30 @@ int main(int argc, char **argv)
 
 	int cmd;
 
-	char* sender_port = NULL;		//p
-	char* requester_port = NULL;	//g
-	char* rate = NULL;				//r
-	char* seq_no = NULL;			//q
-	char* length = NULL;			//l
+	char* arg_sender_port = NULL;		//p
+	char* arg_requester_port = NULL;	//g
+	char* arg_rate = NULL;				//r
+	char* arg_seq_no = NULL;			//q
+	char* arg_length = NULL;			//l
 
 	while ((cmd = getopt(argc, argv, "p:g:r:q:l:")) != -1)
 	{
 		switch (cmd)
 		{
 		case 'p':
-			sender_port = optarg;
+			arg_sender_port = optarg;
 			break;
 		case 'g':
-			requester_port = optarg;
+			arg_requester_port = optarg;
 			break;
 		case 'r':
-			rate = optarg;
+			arg_rate = optarg;
 			break;
 		case 'q':
-			seq_no = optarg;
+			arg_seq_no = optarg;
 			break;
 		case 'l':
-			length = optarg;
+			arg_length = optarg;
 			break;
 		case '?':
 			if (optopt == 'p' || optopt == 'g' || optopt == 'r' || optopt == 'q' || optopt == 'l')
@@ -60,5 +79,46 @@ int main(int argc, char **argv)
 			exit(-1);
 			break;
 		}
+	}
+
+//	printf(arg_sender_port);
+//	printf(arg_requester_port);
+
+	unsigned long int sender_port = strtoul(arg_sender_port, NULL, 0);
+	unsigned long int requester_port = strtoul(arg_requester_port, NULL, 0);
+
+	/*
+	 * Send packets
+	 */
+
+	int sock;
+	struct sockaddr_in server_addr;
+	struct hostent *host;
+	char send_data[1024];
+
+	host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
+		perror("socket");
+		exit(1);
+	}
+
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(requester_port);
+	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
+	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
+
+	while (1)
+	{
+		printf("Type Something (q or Q to quit):");
+		gets(send_data);
+
+		if ((strcmp(send_data , "q") == 0) || strcmp(send_data , "Q") == 0)
+			break;
+
+		else
+			sendto(sock, send_data, strlen(send_data), 0,
+					(struct sockaddr *)&server_addr, sizeof(struct sockaddr));
 	}
 }
