@@ -5,7 +5,6 @@
  *      Author: KevStev
  */
 
-
 #include <unistd.h> //getopt
 #include <ctype.h>  //isprint
 #include <stdlib.h> //exit
@@ -21,22 +20,23 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	// If no commands, do nothing
-	if (argc <= 1) {
+	if (argc <= 1)
+	{
 		return 0;
 	}
 
 	int cmd;
 
-	char* arg_port = NULL; //p
+	char* arg_port = NULL;        //p
 	char* arg_file_option = NULL; //o
 
-	while ((cmd = getopt(argc, argv, "p:o:")) != -1) {
-		switch (cmd) {
+	while ((cmd = getopt(argc, argv, "p:o:")) != -1)
+	{
+		switch (cmd)
+		{
 		case 'p':
 			arg_port = optarg;
 			break;
@@ -60,6 +60,20 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	/*
+	 * Verify all required arguments are supplied here
+	 */
+
+//	printf(arg_port);
+//	printf(arg_file_option);
+
+	/*
+	 * Convert arguments to usable form
+	 */
+
+	unsigned long int port = strtoul(arg_port, NULL, 0);
+	char* file_option = arg_file_option;                 // Alias
+
 	// codez
 	/* udpserver.c */
 
@@ -70,12 +84,11 @@ int main(int argc, char **argv) {
 
 	struct sockaddr_in server_addr, client_addr;
 
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
 		perror("Socket");
 		exit(1);
 	}
-
-	int port = atoi(arg_port);
 
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
@@ -83,7 +96,8 @@ int main(int argc, char **argv) {
 	bzero(&(server_addr.sin_zero), 8);
 
 	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-			== -1) {
+			== -1)
+	{
 		perror("Bind");
 		exit(1);
 	}
@@ -93,10 +107,11 @@ int main(int argc, char **argv) {
 	printf("\nUDPServer Waiting for client on port %d", port);
 	fflush(stdout);
 
-	while (1) {
+	while (1)
+	{
 
-		bytes_read = recvfrom(sock,recv_data,1024,0,
-			                    (struct sockaddr *)&client_addr, &addr_len);
+		bytes_read = recvfrom(sock, recv_data, 1024, 0,
+				(struct sockaddr *) &client_addr, &addr_len);
 
 		recv_data[bytes_read] = '\0';
 

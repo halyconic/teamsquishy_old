@@ -81,8 +81,16 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/*
+	 * Verify all required arguments are supplied here
+	 */
+
 //	printf(arg_sender_port);
 //	printf(arg_requester_port);
+
+	/*
+	 * Convert arguments to usable form
+	 */
 
 	unsigned long int sender_port = strtoul(arg_sender_port, NULL, 0);
 	unsigned long int requester_port = strtoul(arg_requester_port, NULL, 0);
