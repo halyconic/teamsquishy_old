@@ -43,7 +43,11 @@ int main(int argc, char **argv)
 	char* arg_seq_no = NULL;			//q
 	char* arg_length = NULL;			//l
 
-	while ((cmd = getopt(argc, argv, "p:g:r:q:l:")) != -1)
+	// Our personal debug options
+	bool debug = false;					//d
+	char* arg_debug = NULL;				//d
+
+	while ((cmd = getopt(argc, argv, "p:g:r:q:l:d")) != -1)
 	{
 		switch (cmd)
 		{
@@ -61,6 +65,10 @@ int main(int argc, char **argv)
 			break;
 		case 'l':
 			arg_length = optarg;
+			break;
+		case 'd':
+			debug = true;
+			arg_debug = optarg;
 			break;
 		case '?':
 			if (optopt == 'p' || optopt == 'g' || optopt == 'r' || optopt == 'q' || optopt == 'l')

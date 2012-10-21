@@ -37,7 +37,11 @@ int main(int argc, char **argv)
 	char* arg_port = NULL;				//p
 	char* arg_file_option = NULL;		//o
 
-	while ((cmd = getopt(argc, argv, "p:o:")) != -1)
+	// Our personal debug options
+	bool debug = false;					//d
+	char* arg_debug = NULL;				//d
+
+	while ((cmd = getopt(argc, argv, "p:o:d")) != -1)
 	{
 		switch (cmd)
 		{
@@ -46,6 +50,10 @@ int main(int argc, char **argv)
 			break;
 		case 'o':
 			arg_file_option = optarg;
+			break;
+		case 'd':
+			debug = true;
+			arg_debug = optarg;
 			break;
 		case '?':
 			if (optopt == 'p' || optopt == 'o')
