@@ -28,14 +28,12 @@
 int main(int argc, char **argv)
 {
 	/*
-	 * Handle inputs
+	 * Handle arguments
 	 */
 
 	// If no commands, do nothing
 	if (argc <= 1)
-	{
 		return 0;
-	}
 
 	int cmd;
 
@@ -81,22 +79,24 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/*
-	 * Verify all required arguments are supplied here
-	 */
+	// Verify all required arguments are supplied here
 
-//	printf(arg_sender_port);
-//	printf(arg_requester_port);
-
-	/*
-	 * Convert arguments to usable form
-	 */
+	// Convert arguments to usable form
 
 	unsigned long int sender_port = strtoul(arg_sender_port, NULL, 0);
 	unsigned long int requester_port = strtoul(arg_requester_port, NULL, 0);
 
+	// Verify variables are within the correct range
+
+	if (sender_port < 1024 || sender_port > 65536
+			|| requester_port < 1024 || requester_port > 65536)
+	{
+		printf("Please supply a port number between 1025 and 65535.");
+		exit(-1);
+	}
+
 	/*
-	 * Send packets
+	 * Initialize the client to request
 	 */
 
 	int sock;

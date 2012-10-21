@@ -20,18 +20,22 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "tracker.h"
+
 int main(int argc, char **argv)
 {
+	/*
+	 * Handle arguments
+	 */
+
 	// If no commands, do nothing
 	if (argc <= 1)
-	{
 		return 0;
-	}
 
 	int cmd;
 
-	char* arg_port = NULL;        //p
-	char* arg_file_option = NULL; //o
+	char* arg_port = NULL;				//p
+	char* arg_file_option = NULL;		//o
 
 	while ((cmd = getopt(argc, argv, "p:o:")) != -1)
 	{
@@ -60,22 +64,35 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/*
-	 * Verify all required arguments are supplied here
-	 */
+	// Verify all required arguments are supplied here
 
-//	printf(arg_port);
-//	printf(arg_file_option);
-
-	/*
-	 * Convert arguments to usable form
-	 */
+	// Convert arguments to usable form
 
 	unsigned long int port = strtoul(arg_port, NULL, 0);
 	char* file_option = arg_file_option;                 // Alias
 
-	// codez
-	/* udpserver.c */
+	// Verify variables are within the correct range
+
+	if (port < 1024 || port > 65536)
+	{
+		printf("Please supply a port number between 1025 and 65535.");
+		exit(-1);
+	}
+
+	/*
+	 * Parse tracker.txt
+	 */
+
+	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt");
+
+	printf("\n\n");
+	printf("%s", tracker[0].filename);
+	printf("%d", tracker[0].id);
+	printf("%d", tracker[0].port);
+
+	/*
+	 * Initialize the server to be ready to send
+	 */
 
 	int sock;
 	int bytes_read; // <- note how this is now on its own line!
@@ -109,7 +126,6 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-
 		bytes_read = recvfrom(sock, recv_data, 1024, 0,
 				(struct sockaddr *) &client_addr, &addr_len);
 
@@ -121,7 +137,6 @@ int main(int argc, char **argv)
 		// print out the string array
 		printf("%s", recv_data);
 		fflush(stdout);
-
 	}
 	/**/
 	return 0;
