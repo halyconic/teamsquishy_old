@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	bool debug = false;					//d
 	char* arg_debug = NULL;				//d
 
-	while ((cmd = getopt(argc, argv, "p:g:r:q:l:d")) != -1)
+	while ((cmd = getopt(argc, argv, "p:g:r:q:l:d:")) != -1)
 	{
 		switch (cmd)
 		{
@@ -112,18 +112,31 @@ int main(int argc, char **argv)
 	struct hostent *host;
 	char send_data[1024];
 
-	host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
+	if (debug)
+	{
+		host = (struct hostent *) gethostbyname(arg_debug);
+
+		if ((struct hostent *) host == NULL)
+		{
+			printf("Host was not found by the name of %s\n", arg_debug);
+			exit(1);
+		}
+	}
+	else
+		host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	{
-		perror("socket");
 		exit(1);
 	}
 
+	// Where we are sending to
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(requester_port);
 	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
 	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
+
+	perror(arg_debug);
 
 	while (1)
 	{

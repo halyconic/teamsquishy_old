@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	bool debug = false;					//d
 	char* arg_debug = NULL;				//d
 
-	while ((cmd = getopt(argc, argv, "p:o:d")) != -1)
+	while ((cmd = getopt(argc, argv, "p:o:d:")) != -1)
 	{
 		switch (cmd)
 		{
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 			arg_debug = optarg;
 			break;
 		case '?':
-			if (optopt == 'p' || optopt == 'o')
+			if (optopt == 'p' || optopt == 'o' || optopt == 'd')
 				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
 			else if (isprint(optopt))
 				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
