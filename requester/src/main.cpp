@@ -83,12 +83,12 @@ int main(int argc, char **argv)
 	 * Parse tracker.txt
 	 */
 
-	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt");
-
-	printf("\n\n");
-	printf("%s", tracker[0].filename);
-	printf("%d", tracker[0].id);
-	printf("%d", tracker[0].port);
+//	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt");
+//
+//	printf("\n\n");
+//	printf("%s", tracker[0].filename);
+//	printf("%d", tracker[0].id);
+//	printf("%d", tracker[0].port);
 
 	/*
 	 * Initialize the server to be ready to send
