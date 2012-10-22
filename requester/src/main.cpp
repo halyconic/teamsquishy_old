@@ -101,17 +101,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	// Make requests
-
-	// Listen for packets (Listen until end packet)
-
-	// Reorder packets
-
-	// Print out to file
-
-	/*
-	 * Parse tracker.txt
-	 */
+	// Parse tracker.txt
 
 	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
 
@@ -130,6 +120,30 @@ int main(int argc, char **argv)
 			printf("\n");
 		}
 	}
+
+	// Make requests
+
+	unsigned int number_of_parts = 0;
+
+	for (unsigned int i = 0; i < tracker.size(); i++)
+	{
+		if (strcmp(file_option, tracker[i].filename) == 0)
+		{
+			// Send request
+		}
+	}
+
+	if (number_of_parts <= 0)
+	{
+		printf("Tracker file does not contain any files by the name %s.\n", file_option);
+		return(0);
+	}
+
+	// Listen for packets (Listen until end packet)
+
+	// Reorder packets
+
+	// Print out to file
 
 	/*
 	 * Initialize the server to be ready to send
