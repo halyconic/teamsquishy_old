@@ -9,6 +9,8 @@
 #include <ctype.h>  //isprint
 #include <stdlib.h> //exit
 #include <stdio.h>
+#include <vector>
+#include <algorithm>//sort
 
 //#include <sys/types.h>
 //#include <sys/socket.h>
@@ -20,6 +22,8 @@
 //#include <errno.h>
 #include <string.h>
 #include <cstdlib> //strtol
+
+const int MAX_DATA = 1 + 4 + 4 + 5*1024;
 
 /*
  * TODO:
@@ -71,7 +75,7 @@ int main(int argc, char **argv)
 			arg_debug = optarg;
 			break;
 		case '?':
-			if (optopt == 'p' || optopt == 'g' || optopt == 'r' || optopt == 'q' || optopt == 'l')
+			if (optopt == 'p' || optopt == 'g' || optopt == 'r' || optopt == 'q' || optopt == 'l' || optopt == 'd')
 				fprintf (stderr, "Option -%c requires an argument.\n", optopt);
 			else if (isprint(optopt))
 				fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -135,8 +139,6 @@ int main(int argc, char **argv)
 	server_addr.sin_port = htons(requester_port);
 	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
 	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
-
-	perror(arg_debug);
 
 	while (1)
 	{

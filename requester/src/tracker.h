@@ -28,5 +28,5 @@ public:
 /*
  * Return entries from file
  */
-std::vector<TrackerEntry> get_tracker_from_file(char* filename);
+std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug);
 

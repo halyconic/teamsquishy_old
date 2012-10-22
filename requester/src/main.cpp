@@ -30,7 +30,10 @@ int main(int argc, char **argv)
 
 	// If no commands, do nothing
 	if (argc <= 1)
+	{
+		printf("Please supply arguments.\n");
 		return 0;
+	}
 
 	int cmd;
 
@@ -74,6 +77,17 @@ int main(int argc, char **argv)
 
 	// Verify all required arguments are supplied here
 
+	if (!arg_port)
+	{
+		printf("Please supply a port (Usage: -p <port>).\n");
+		return 0;
+	}
+	else if (!arg_file_option)
+	{
+		printf("Please supply a file option (Usage: -o <file_option>).\n");
+		return 0;
+	}
+
 	// Convert arguments to usable form
 
 	unsigned long int port = strtoul(arg_port, NULL, 0);
@@ -83,71 +97,89 @@ int main(int argc, char **argv)
 
 	if (port < 1024 || port > 65536)
 	{
-		printf("Please supply a port number between 1025 and 65535.");
-		exit(-1);
+		printf("Please supply a port number between 1025 and 65535.\n");
+		return 0;
 	}
+
+	// Make requests
+
+	// Listen for packets (Listen until end packet)
+
+	// Reorder packets
+
+	// Print out to file
 
 	/*
 	 * Parse tracker.txt
 	 */
 
-//	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt");
-//
-//	printf("\n\n");
-//	printf("%s", tracker[0].filename);
-//	printf("%d", tracker[0].id);
-//	printf("%d", tracker[0].port);
+	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
+
+	if (debug)
+	{
+		printf("Output entries:\n");
+		for (unsigned int i = 0; i < tracker.size(); i++)
+		{
+			printf("%s", tracker[i].filename);
+			printf(" ");
+			printf("%d", tracker[i].id);
+			printf(" ");
+			printf("%s", tracker[i].machinename);
+			printf(" ");
+			printf("%d", tracker[i].port);
+			printf("\n");
+		}
+	}
 
 	/*
 	 * Initialize the server to be ready to send
 	 */
 
-	int sock;
-	int bytes_read; // <- note how this is now on its own line!
-	socklen_t addr_len; // <- and this too, with a different type.
-	char recv_data[1024];
-
-	struct sockaddr_in server_addr, client_addr;
-
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-	{
-		perror("Socket");
-		exit(1);
-	}
-
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	bzero(&(server_addr.sin_zero), 8);
-
-	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-			== -1)
-	{
-		perror("Bind");
-		exit(1);
-	}
-
-	addr_len = sizeof(struct sockaddr);
-
-	printf("\nUDPServer Waiting for client on port %d", port);
-	fflush(stdout);
-
-	while (1)
-	{
-		bytes_read = recvfrom(sock, recv_data, 1024, 0,
-				(struct sockaddr *) &client_addr, &addr_len);
-
-		recv_data[bytes_read] = '\0';
-
-		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
-				client_addr.sin_port));
-
-		// print out the string array
-		printf("%s", recv_data);
-		fflush(stdout);
-	}
-	/**/
-	return 0;
-
+//	int sock;
+//	int bytes_read; // <- note how this is now on its own line!
+//	socklen_t addr_len; // <- and this too, with a different type.
+//	char recv_data[1024];
+//
+//	struct sockaddr_in server_addr, client_addr;
+//
+//	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+//	{
+//		perror("Socket");
+//		exit(1);
+//	}
+//
+//	server_addr.sin_family = AF_INET;
+//	server_addr.sin_port = htons(port);
+//	server_addr.sin_addr.s_addr = INADDR_ANY;
+//	bzero(&(server_addr.sin_zero), 8);
+//
+//	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
+//			== -1)
+//	{
+//		perror("Bind");
+//		exit(1);
+//	}
+//
+//	addr_len = sizeof(struct sockaddr);
+//
+//	printf("\nUDPServer Waiting for client on port %d", port);
+//	fflush(stdout);
+//
+//	while (1)
+//	{
+//		bytes_read = recvfrom(sock, recv_data, 1024, 0,
+//				(struct sockaddr *) &client_addr, &addr_len);
+//
+//		recv_data[bytes_read] = '\0';
+//
+//		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
+//				client_addr.sin_port));
+//
+//		// print out the string array
+//		printf("%s", recv_data);
+//		fflush(stdout);
+//	}
+//	/**/
+//	return 0;
 }
 

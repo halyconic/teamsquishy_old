@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h> //exit
 
-std::vector<TrackerEntry> get_tracker_from_file(char* filename)
+std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 {
 	// Stores file into an iterable array
 	std::vector<TrackerEntry> tracker;
@@ -22,6 +22,9 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename)
 	char buf[MAX_CHARS_PER_LINE];
 	const int MAX_TOKENS_PER_LINE = 4;
 	const char* const DELIMITER = " ";
+
+	if (debug)
+		printf("Input entries:\n");
 
 	// read each line of the file
 	while (!fin.eof())
@@ -44,19 +47,22 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename)
 	    		if (!token[n]) break; // no more tokens
 	    	}
 
-	    	printf(token[0]);
-	    	printf("\n");
+	    	// Print file as inputting
+	    	if (debug)
+	    	{
+	    		for (int i = 0; i < MAX_TOKENS_PER_LINE; i++)
+	    		{
+					printf(token[i]);
+					printf(" ");
+	    		}
+	    		printf("\n");
+	    	}
 
 		    tracker.push_back(TrackerEntry(
 		    		token[0],
 		    		strtoul(token[1], NULL, 0),
 		    		token[2],
 		    		strtoul(token[3], NULL, 0)));
-
-	    	printf("%s", tracker[0].filename);
-	    	printf("%d", tracker[0].id);
-	    	printf("%d", tracker[0].port);
-	    	printf("\n");
 	    }
 	}
 
