@@ -204,8 +204,11 @@ int main(int argc, char **argv)
 			{
 				printf("Packet:\n");
 				printf(send_packet.type);
+				printf("\n");
 				printf(send_packet.seq);
+				printf("\n");
 				printf(send_packet.length);
+				printf("\n");
 			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];

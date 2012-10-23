@@ -149,7 +149,7 @@ int main(int argc, char **argv)
 	int sock;
 	int bytes_read; // <- note how this is now on its own line!
 	socklen_t addr_len; // <- and this too, with a different type.
-	char send_data[MAX_DATA];
+	char recv_data[MAX_DATA];
 
 	struct sockaddr_in requester_addr, sender_addr;
 
@@ -163,6 +163,7 @@ int main(int argc, char **argv)
 	requester_addr.sin_port = htons(port);
 	requester_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(requester_addr.sin_zero), 8);
+
 
 	// Bind port to listen on
 	if (bind(sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
@@ -188,7 +189,15 @@ int main(int argc, char **argv)
 			send_packet.seq = 0;
 			send_packet.length = 0;
 			if (debug)
-				printf("Packet length: %d\n", send_packet.length);
+			{
+				printf("Packet:\n");
+				printf("%d",send_packet.type);
+				printf("\n");
+				printf("%d",send_packet.seq);
+				printf("\n");
+				printf("%d",send_packet.length);
+				printf("\n");
+			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
 
@@ -196,7 +205,7 @@ int main(int argc, char **argv)
 			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
 			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
 			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
-			memcpy(&buf_send_packet[9], &send_packet.payload, send_packet.length);
+			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
 			i++;
 
 			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
@@ -228,11 +237,11 @@ int main(int argc, char **argv)
 			if (debug)
 			{
 				printf("Received packet:\n");
-				printf(recv_packet.type);
+				printf("%d",recv_packet.type);
 				printf("\n");
-				printf(recv_packet.seq);
+				printf("%d",recv_packet.seq);
 				printf("\n");
-				printf(recv_packet.length);
+				printf("%d",recv_packet.length);
 				printf("\n");
 				printf(recv_packet.payload);
 				printf("\n");
