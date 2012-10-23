@@ -10,18 +10,21 @@
 #include <stdlib.h> //exit
 #include <stdio.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+//#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
+#include <netdb.h>
+//#include <stdio.h>
+//#include <unistd.h>
+//#include <errno.h>
 #include <string.h>
-#include <stdlib.h>
+#include <cstdlib> //strtol
 
 #include "tracker.h"
 #include "packet.h"
+
+const char * domain = ".cs.wisc.edu";
 
 int main(int argc, char **argv)
 {
@@ -120,16 +123,17 @@ int main(int argc, char **argv)
 
 	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
 
+
+
 	if (debug)
 	{
 		printf("\n");
 		printf("Output entries:\n");
 		for (unsigned int i = 0; i < tracker.size(); i++)
 		{
+
 			printf("%s", tracker[i].filename);
-			if (strcmp(tracker[i].filename,"file1.txt") == 0){
-				printf("first token is null");
-			}
+
 			printf(" ");
 			printf("%d", tracker[i].id);
 			printf(" ");
@@ -150,7 +154,7 @@ int main(int argc, char **argv)
 	int bytes_read; // <- note how this is now on its own line!
 	socklen_t addr_len; // <- and this too, with a different type.
 	char recv_data[MAX_DATA];
-
+	struct hostent* recv_ent;
 	struct sockaddr_in requester_addr, sender_addr;
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
@@ -159,27 +163,41 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	//TEMP
+	if (debug)
+	{
+		recv_ent = (struct hostent *) gethostbyname(arg_debug);
+
+		if ((struct hostent *) recv_ent == NULL)
+		{
+			printf("Host was not found by the name of %s\n", arg_debug);
+			exit(1);
+		}
+	}
+
 	requester_addr.sin_family = AF_INET;
 	requester_addr.sin_port = htons(port);
-	requester_addr.sin_addr.s_addr = INADDR_ANY;
+	requester_addr.sin_addr = *((struct in_addr *)recv_ent->h_addr);
 	bzero(&(requester_addr.sin_zero), 8);
 
 
-	// Bind port to listen on
+/*	// Bind port to listen on
 	if (bind(sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
 	{
 		perror("Bind");
 		exit(1);
-	}
+	}*/
 
 	addr_len = sizeof(struct sockaddr);
 
 	// Make requests
 
 	unsigned int number_of_parts = 0;
-
 	for (unsigned int i = 0; i < tracker.size(); i++)
 	{
+		/*printf("file option: %s\n", file_option);
+		printf("file name: %s\n", tracker[i].filename);*/
+
 		if (strcmp(file_option, tracker[i].filename) == 0)
 		{
 			// Send request
@@ -191,7 +209,7 @@ int main(int argc, char **argv)
 			if (debug)
 			{
 				printf("Packet:\n");
-				printf("%d",send_packet.type);
+				printf("%c",send_packet.type);
 				printf("\n");
 				printf("%d",send_packet.seq);
 				printf("\n");
@@ -208,6 +226,7 @@ int main(int argc, char **argv)
 			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
 			i++;
 
+			printf("about to send packets\n");
 			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
 					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
 		}
