@@ -211,6 +211,7 @@ int main(int argc, char **argv)
 						send_packet.type,
 						send_packet.seq,
 						send_packet.length);
+				printf("Payload: %s\n", send_packet.payload);
 			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
@@ -233,67 +234,23 @@ int main(int argc, char **argv)
 			char buf_end_packet[MAX_HEADER] = {0};
 			buf_end_packet[0] = 'E';
 
+			if (debug)
+			{
+				printf("End packet being sent:\n");
+				printf("%c %d %d\n",
+						buf_end_packet[0],
+						(int)buf_end_packet[1],
+						(int)buf_end_packet[5]);
+				printf("Payload: %s\n", send_packet.payload);
+			}
+
 			sendto(sock, buf_end_packet, sizeof(buf_end_packet), 0,
 					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
+
 		}
 		else
 		{
 			// Drop packet
 		}
 	}
-
-	//std::vector<Packet> packets = std::vector<Packet>();
-	//Packet packet = recv_data;
-	//packets.push_back(packet);
-
-//	/*
-//	 * Initialize the client to request
-//	 */
-
-	//	server_addr.sin_family = AF_INET;
-	//	server_addr.sin_port = htons(port);
-	//	server_addr.sin_addr.s_addr = INADDR_ANY;
-	//	bzero(&(server_addr.sin_zero), 8);
-
-//	int sock;
-//	struct sockaddr_in server_addr;
-//	struct hostent *host;
-//	char send_data[1024];
-//
-//	if (debug)
-//	{
-//		host = (struct hostent *) gethostbyname(arg_debug);
-//
-//		if ((struct hostent *) host == NULL)
-//		{
-//			printf("Host was not found by the name of %s\n", arg_debug);
-//			exit(1);
-//		}
-//	}
-//	else
-//		host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
-//
-//	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-//	{
-//		exit(1);
-//	}
-//
-//	// Where we are sending to
-//	server_addr.sin_family = AF_INET;
-//	server_addr.sin_port = htons(requester_port);
-//	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
-//	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
-//
-//	while (1)
-//	{
-//		printf("Type Something (q or Q to quit):");
-//		gets(send_data);
-//
-//		if ((strcmp(send_data , "q") == 0) || strcmp(send_data , "Q") == 0)
-//			break;
-//
-//		else
-//			sendto(sock, send_data, strlen(send_data), 0,
-//					(struct sockaddr *)&server_addr, sizeof(struct sockaddr));
-//	}
 }

@@ -112,7 +112,6 @@ int main(int argc, char **argv)
 		printf("Output entries:\n");
 		for (unsigned int i = 0; i < tracker.size(); i++)
 		{
-
 			printf("%s", tracker[i].filename);
 			printf(" ");
 			printf("%d", tracker[i].id);
@@ -139,32 +138,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	//TEMP
-	if (arg_debug)
-	{
-		printf("arg_debug is %s\n", arg_debug);
-
-		send_ent = (struct hostent *) gethostbyname(arg_debug);
-
-		if ((struct hostent *) send_ent == NULL)
-		{
-			printf("Host was not found by the name of %s\n", arg_debug);
-			exit(1);
-		}
-	}
-	else
-	{
-		// Send to files specified by tracker.txt
-		printf("no addr specified yet\n");
-		return 0;
-	}
-
 	// Where we are sending to
 	sender_addr.sin_family = AF_INET;
-	sender_addr.sin_port = htons(port);
-	sender_addr.sin_addr = *((struct in_addr *)send_ent->h_addr);
-	bzero(&(sender_addr.sin_zero), 8);
-
 	addr_len = sizeof(struct sockaddr);
 
 	// Make requests
@@ -172,13 +147,39 @@ int main(int argc, char **argv)
 	unsigned int number_of_parts = 0;
 	for (unsigned int i = 0; i < tracker.size(); i++)
 	{
-		/*printf("file option: %s\n", file_option);
-		printf("file name: %s\n", tracker[i].filename);*/
-
 		if (strcmp(file_option, tracker[i].filename) == 0)
 		{
+			if (debug)
+			{
+				printf("Entry acknowledged:\n");
+				printf("%s %d %s %d\n",
+					tracker[i].filename,
+					tracker[i].id,
+					tracker[i].machinename,
+					tracker[i].port);
+			}
+
 			// Send request
 
+			// Adjust where we are sending to
+			char* ip_lookup = new char[strlen(tracker[i].machinename) + strlen(domain)];
+			ip_lookup = strcat(tracker[i].machinename, domain);
+			send_ent = (struct hostent *) gethostbyname(ip_lookup);
+
+			// Verify sender exists
+			if ((struct hostent *) send_ent == NULL)
+			{
+				// TODO: Gracefully handle missing sender
+				printf("Host was not found by the name of %s\n", arg_debug);
+				exit(1);
+			}
+
+			// Set up address
+			sender_addr.sin_port = htons(tracker[i].port);
+			sender_addr.sin_addr = *((struct in_addr *)send_ent->h_addr);
+			bzero(&(sender_addr.sin_zero), 8);
+
+			// Form packet
 			Packet send_packet;
 			send_packet.type = 'R';
 			send_packet.seq = 0;
@@ -190,6 +191,7 @@ int main(int argc, char **argv)
 						send_packet.type,
 						send_packet.seq,
 						send_packet.length);
+				printf("Payload: %s\n", send_packet.payload);
 			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
@@ -199,7 +201,6 @@ int main(int argc, char **argv)
 			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
 			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
 			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
-			i++;
 
 			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
 					(struct sockaddr *)&sender_addr, sizeof(struct sockaddr));
@@ -219,11 +220,23 @@ int main(int argc, char **argv)
 
 	// Listen for packets (Listen until end packet)
 
+	// Own address
+	requester_addr.sin_family = AF_INET;
+	requester_addr.sin_port = htons(port);
+	requester_addr.sin_addr.s_addr = INADDR_ANY;
+	bzero(&(requester_addr.sin_zero), 8);
+
 	// Bind port to listen on
 	if (bind(sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
 	{
 		perror("Bind");
 		exit(1);
+	}
+
+	if (debug)
+	{
+		printf("Requester waiting for sender on port %d\n", port);
+		fflush(stdout);
 	}
 
 	while (1)
@@ -263,104 +276,5 @@ int main(int argc, char **argv)
 
 
 	// Initialize the server to be ready to send
-
-
-	//int sock;
-//	int bytes_read; // <- note how this is now on its own line!
-//	socklen_t addr_len; // <- and this too, with a different type.
-//	char recv_data[1024];
-//
-//	struct sockaddr_in server_addr, client_addr;
-//
-//	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-//	{
-//		perror("Socket");
-//		exit(1);
-//	}
-//
-//	server_addr.sin_family = AF_INET;
-//	server_addr.sin_port = htons(port);
-//	server_addr.sin_addr.s_addr = INADDR_ANY;
-//	bzero(&(server_addr.sin_zero), 8);
-//
-//	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-//			== -1)
-//	{
-//		perror("Bind");
-//		exit(1);
-//	}
-//
-//	addr_len = sizeof(struct sockaddr);
-//
-//	printf("\nUDPServer Waiting for client on port %d", port);
-//	fflush(stdout);
-//
-//	while (1)
-//	{
-//		bytes_read = recvfrom(sock, recv_data, 1024, 0,
-//				(struct sockaddr *) &client_addr, &addr_len);
-//
-//		recv_data[bytes_read] = '\0';
-//
-//		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
-//				client_addr.sin_port));
-//
-//		// print out the string array
-//		printf("%s", recv_data);
-//		fflush(stdout);
-//	}
-	/**/
-
-
-	//	/*
-	//	 * Initialize the client to request
-	//	 */
-
-/*	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	bzero(&(server_addr.sin_zero), 8);
-
-	int sock;
-	struct sockaddr_in server_addr;
-	struct hostent *host;
-	char send_data[1024];
-
-	if (debug)
-	{
-		host = (struct hostent *) gethostbyname(arg_debug);
-
-		if ((struct hostent *) host == NULL)
-		{
-			printf("Host was not found by the name of %s\n", arg_debug);
-			exit(1);
-		}
-	}
-	else
-		host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
-
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-	{
-		exit(1);
-	}
-
-	// Where we are sending to
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(requester_port);
-	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
-	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
-
-	while (1)
-	{
-		printf("Type Something (q or Q to quit):");
-		gets(send_data);
-
-		if ((strcmp(send_data , "q") == 0) || strcmp(send_data , "Q") == 0)
-			break;
-
-		else
-			sendto(sock, send_data, strlen(send_data), 0,
-					(struct sockaddr *) &server_addr, sizeof(struct sockaddr));
-	}*/
 }
 

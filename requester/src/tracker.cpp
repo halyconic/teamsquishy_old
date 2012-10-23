@@ -66,7 +66,7 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 			tracker.push_back(TrackerEntry(
 					strdup(token[0]),
 					strtoul(token[1], NULL, 0),
-					token[2],
+					strdup(token[2]),
 					strtoul(token[3], NULL, 0)));
 		}
 	}
