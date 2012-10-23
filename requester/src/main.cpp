@@ -180,13 +180,13 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	// Own address
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(server_addr.sin_zero), 8);
 
-	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-			== -1)
+	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr)) == -1)
 	{
 		perror("Bind");
 		exit(1);
