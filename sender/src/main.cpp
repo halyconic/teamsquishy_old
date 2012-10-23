@@ -196,12 +196,17 @@ int main(int argc, char **argv)
 			 * CONTAIN IN WHILE LOOP
 			 */
 			Packet send_packet;
-			send_packet.type = 'R';
+			send_packet.type = 'D';
 			send_packet.seq = i;
 			filestr >> send_packet.payload;
 			send_packet.length = (unsigned int)filestr.gcount();
 			if (debug)
-				printf("Packet length: %d\n", send_packet.length);
+			{
+				printf("Packet:\n");
+				printf(send_packet.type);
+				printf(send_packet.seq);
+				printf(send_packet.length);
+			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
 

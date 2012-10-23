@@ -212,6 +212,38 @@ int main(int argc, char **argv)
 
 	// Listen for packets (Listen until end packet)
 
+	while (1)
+	{
+		bytes_read = recvfrom(sock, recv_data, sizeof(recv_data), 0,
+			(struct sockaddr *) &sender_addr, &addr_len);
+
+		Packet recv_packet = recv_data;
+
+		if (recv_packet.type == 'D')
+		{
+			unsigned int i = 0;
+			/*
+			 * CONTAIN IN WHILE LOOP
+			 */
+			if (debug)
+			{
+				printf("Received packet:\n");
+				printf(recv_packet.type);
+				printf("\n");
+				printf(recv_packet.seq);
+				printf("\n");
+				printf(recv_packet.length);
+				printf("\n");
+				printf(recv_packet.payload);
+				printf("\n");
+			}
+		}
+		else
+		{
+			// Drop packet
+		}
+	}
+
 	// Reorder packets
 
 	// Print out to file
