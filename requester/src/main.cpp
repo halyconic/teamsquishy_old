@@ -117,45 +117,45 @@ int main(int argc, char **argv)
 
 	// Parse tracker.txt
 
-	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
-
-	if (debug)
-	{
-		printf("\n");
-		printf("Output entries:\n");
-		for (unsigned int i = 0; i < tracker.size(); i++)
-		{
-			printf("%s", tracker[i].filename);
-			if (strcmp(tracker[i].filename,"file1.txt") == 0){
-				printf("first token is null");
-			}
-			printf(" ");
-			printf("%d", tracker[i].id);
-			printf(" ");
-			printf("%s", tracker[i].machinename);
-			printf(" ");
-			printf("%d", tracker[i].port);
-			printf("\n");
-		}
-	}
+//	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
+//
+//	if (debug)
+//	{
+//		printf("\n");
+//		printf("Output entries:\n");
+//		for (unsigned int i = 0; i < tracker.size(); i++)
+//		{
+//			printf("%s", tracker[i].filename);
+//			if (strcmp(tracker[i].filename,"file1.txt") == 0){
+//				printf("first token is null");
+//			}
+//			printf(" ");
+//			printf("%d", tracker[i].id);
+//			printf(" ");
+//			printf("%s", tracker[i].machinename);
+//			printf(" ");
+//			printf("%d", tracker[i].port);
+//			printf("\n");
+//		}
+//	}
 
 	// Make requests
 
-	unsigned int number_of_parts = 0;
+//	unsigned int number_of_parts = 0;
+//
+//	for (unsigned int i = 0; i < tracker.size(); i++)
+//	{
+//		if (strcmp(file_option, tracker[i].filename) == 0)
+//		{
+//			// Send request
+//		}
+//	}
 
-	for (unsigned int i = 0; i < tracker.size(); i++)
-	{
-		if (strcmp(file_option, tracker[i].filename) == 0)
-		{
-			// Send request
-		}
-	}
-
-	if (number_of_parts <= 0)
-	{
-		printf("Tracker file does not contain any files by the name %s.\n", file_option);
-		return(0);
-	}
+//	if (number_of_parts <= 0)
+//	{
+//		printf("Tracker file does not contain any files by the name %s.\n", file_option);
+//		return(0);
+//	}
 
 	// Listen for packets (Listen until end packet)
 
