@@ -144,7 +144,6 @@ int main(int argc, char **argv)
 	int bytes_read; // <- note how this is now on its own line!
 	socklen_t addr_len; // <- and this too, with a different type.
 	char recv_data[MAX_DATA];
-	Packet packet;
 
 	struct sockaddr_in requester_addr, sender_addr;
 
@@ -177,7 +176,7 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		bytes_read = recvfrom(sock, recv_data, sizeof(packet), 0,
+		bytes_read = recvfrom(sock, recv_data, sizeof(recv_data), 0,
 			(struct sockaddr *) &requester_addr, &addr_len);
 
 		Packet recv_packet = recv_data;
@@ -185,6 +184,9 @@ int main(int argc, char **argv)
 		if (recv_packet.type == 'R')
 		{
 			// Break requested file into packets
+			char* recv_filename = (char*)recv_packet.payload; // Alias only, be careful!
+			if (debug)
+				printf("Filename: %s\n", recv_filename);
 
 			std::fstream filestr;
 			filestr.open ((char*)recv_packet.payload, std::fstream::out);
@@ -199,7 +201,7 @@ int main(int argc, char **argv)
 			filestr >> send_packet.payload;
 			send_packet.length = (unsigned int)filestr.gcount();
 			if (debug)
-				printf("Packet length: %d", send_packet.length);
+				printf("Packet length: %d\n", send_packet.length);
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
 
@@ -210,22 +212,19 @@ int main(int argc, char **argv)
 			memcpy(&buf_send_packet[9], &send_packet.payload, send_packet.length);
 			i++;
 
-			sendto(sock, packet, packet.length + MAX_HEADER, 0,
+			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
 					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
 			/*
 			 * CONTAIN IN WHILE LOOP
 			 */
 
-
 			filestr.close();
 
-			// Send a reply
+			char buf_end_packet[MAX_HEADER] = {0};
+			buf_end_packet[0] = 'E';
 
-
-
-
-//			sendto(sock, send_data, sizeof(send_data), 0,
-//					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
+			sendto(sock, buf_end_packet, sizeof(buf_end_packet), 0,
+					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
 		}
 		else
 		{
