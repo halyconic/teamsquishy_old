@@ -24,9 +24,23 @@
 
 int main(int argc, char **argv)
 {
-	/*
-	 * Handle arguments
-	 */
+/*	char string1[]="test string";
+	char string2[80];
+	char string3[80];
+	char *string4;
+	strcpy (string2,string1);
+	strcpy (string3,"strcopy worked.");
+	string4 = strcpy(string2, "strcpy return example");
+	printf ("string1: %s\nstring2: %s\nstring3: %s\n",string1,string2,string3);
+	printf ("string4: %s\n",string4);
+
+	char * temp;
+	char family[80];
+	temp = strcpy(family, "kevin");
+	printf("%s", temp);*/
+
+	// Handle arguments
+
 
 	// If no commands, do nothing
 	if (argc <= 1)
@@ -107,10 +121,14 @@ int main(int argc, char **argv)
 
 	if (debug)
 	{
+		printf("\n");
 		printf("Output entries:\n");
 		for (unsigned int i = 0; i < tracker.size(); i++)
 		{
 			printf("%s", tracker[i].filename);
+			if (strcmp(tracker[i].filename,"file1.txt") == 0){
+				printf("first token is null");
+			}
 			printf(" ");
 			printf("%d", tracker[i].id);
 			printf(" ");
@@ -145,55 +163,55 @@ int main(int argc, char **argv)
 
 	// Print out to file
 
-	/*
-	 * Initialize the server to be ready to send
-	 */
 
-//	int sock;
-//	int bytes_read; // <- note how this is now on its own line!
-//	socklen_t addr_len; // <- and this too, with a different type.
-//	char recv_data[1024];
-//
-//	struct sockaddr_in server_addr, client_addr;
-//
-//	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-//	{
-//		perror("Socket");
-//		exit(1);
-//	}
-//
-//	server_addr.sin_family = AF_INET;
-//	server_addr.sin_port = htons(port);
-//	server_addr.sin_addr.s_addr = INADDR_ANY;
-//	bzero(&(server_addr.sin_zero), 8);
-//
-//	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-//			== -1)
-//	{
-//		perror("Bind");
-//		exit(1);
-//	}
-//
-//	addr_len = sizeof(struct sockaddr);
-//
-//	printf("\nUDPServer Waiting for client on port %d", port);
-//	fflush(stdout);
-//
-//	while (1)
-//	{
-//		bytes_read = recvfrom(sock, recv_data, 1024, 0,
-//				(struct sockaddr *) &client_addr, &addr_len);
-//
-//		recv_data[bytes_read] = '\0';
-//
-//		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
-//				client_addr.sin_port));
-//
-//		// print out the string array
-//		printf("%s", recv_data);
-//		fflush(stdout);
-//	}
-//	/**/
-//	return 0;
+	 // Initialize the server to be ready to send
+
+
+	int sock;
+	int bytes_read; // <- note how this is now on its own line!
+	socklen_t addr_len; // <- and this too, with a different type.
+	char recv_data[1024];
+
+	struct sockaddr_in server_addr, client_addr;
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
+		perror("Socket");
+		exit(1);
+	}
+
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port);
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	bzero(&(server_addr.sin_zero), 8);
+
+	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
+			== -1)
+	{
+		perror("Bind");
+		exit(1);
+	}
+
+	addr_len = sizeof(struct sockaddr);
+
+	printf("\nUDPServer Waiting for client on port %d", port);
+	fflush(stdout);
+
+	while (1)
+	{
+		bytes_read = recvfrom(sock, recv_data, 1024, 0,
+				(struct sockaddr *) &client_addr, &addr_len);
+
+		recv_data[bytes_read] = '\0';
+
+		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
+				client_addr.sin_port));
+
+		// print out the string array
+		printf("%s", recv_data);
+		fflush(stdout);
+	}
+	/**/
+	return 0;
 }
 

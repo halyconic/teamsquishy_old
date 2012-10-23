@@ -1,5 +1,6 @@
 #include "tracker.h"
 
+
 #include <fstream> //ifstream
 #include <stdio.h>
 #include <string.h>
@@ -19,9 +20,13 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 	}
 
 	const int MAX_CHARS_PER_LINE = 512;
-	char buf[MAX_CHARS_PER_LINE];
+	char buffer[MAX_CHARS_PER_LINE];
 	const int MAX_TOKENS_PER_LINE = 4;
 	const char* const DELIMITER = " ";
+
+
+
+
 
 	if (debug)
 		printf("Input entries:\n");
@@ -29,42 +34,52 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 	// read each line of the file
 	while (!fin.eof())
 	{
-	    fin.getline(buf, MAX_CHARS_PER_LINE);
 
-	    // array to store memory addresses of the tokens in buf
-	    char* token[MAX_TOKENS_PER_LINE] = {0}; // initialize to 0
+		fin.getline(buffer, MAX_CHARS_PER_LINE);
 
-	    // parse the line
-	    token[0] = strtok(buf, DELIMITER); // first token
+		// array to store memory addresses of the tokens in buf
+		char* token[MAX_TOKENS_PER_LINE] = {0}; // initialize to 0
 
-	    // TODO: fail here if < 4 items
-	    int n = 0; // for-loop index
-	    if (token[0]) // zero if line is blank
-	    {
-	    	for (n = 1; n < MAX_TOKENS_PER_LINE; n++)
-	    	{
-	    		token[n] = strtok(0, DELIMITER); // subsequent tokens
-	    		if (!token[n]) break; // no more tokens
-	    	}
+		// parse the line
+		token[0] = strtok(buffer, DELIMITER); // first token
+		printf("toekn 0: %s\n", token[0]);
 
-	    	// Print file as inputting
-	    	if (debug)
-	    	{
-	    		for (int i = 0; i < MAX_TOKENS_PER_LINE; i++)
-	    		{
+
+
+
+		// TODO: fail here if < 4 items
+		int n = 0; // for-loop index
+		if (token[0]) // zero if line is blank
+		{
+			// get the rest of the tokens
+			for (n = 1; n < MAX_TOKENS_PER_LINE; n++)
+			{
+				token[n] = strtok(0, DELIMITER); // subsequent tokens
+				if (!token[n])
+					break; // no more tokens
+			}
+
+			// Print file as inputting
+			if (debug)
+			{
+				for (int i = 0; i < MAX_TOKENS_PER_LINE; i++)
+				{
 					printf(token[i]);
 					printf(" ");
-	    		}
-	    		printf("\n");
-	    	}
+				}
+				printf("\n");
+			}
 
-		    tracker.push_back(TrackerEntry(
-		    		token[0],
-		    		strtoul(token[1], NULL, 0),
-		    		token[2],
-		    		strtoul(token[3], NULL, 0)));
-	    }
+			//printf("the first token: %s\n", token[0]);
+			tracker.push_back(TrackerEntry(
+					strdup(token[0]),
+					strtoul(token[1], NULL, 0),
+					token[2],
+					strtoul(token[3], NULL, 0)));
+		}
 	}
+
+	//printf("TRACKER SIZE: %d", tracker.size());
 
 	return tracker;
 }
