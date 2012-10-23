@@ -24,11 +24,7 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 	const int MAX_TOKENS_PER_LINE = 4;
 	const char* const DELIMITER = " ";
 
-
-
-
-
-	if (debug)
+	if (0 && debug)
 		printf("Input entries:\n");
 
 	// read each line of the file
@@ -42,10 +38,6 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 
 		// parse the line
 		token[0] = strtok(buffer, DELIMITER); // first token
-		printf("toekn 0: %s\n", token[0]);
-
-
-
 
 		// TODO: fail here if < 4 items
 		int n = 0; // for-loop index
@@ -60,7 +52,7 @@ std::vector<TrackerEntry> get_tracker_from_file(char* filename, bool debug)
 			}
 
 			// Print file as inputting
-			if (debug)
+			if (0 && debug)
 			{
 				for (int i = 0; i < MAX_TOKENS_PER_LINE; i++)
 				{

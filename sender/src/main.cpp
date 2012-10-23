@@ -153,6 +153,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	// Own address
 	sender_addr.sin_family = AF_INET;
 	sender_addr.sin_port = htons(sender_port);
 	sender_addr.sin_addr.s_addr = INADDR_ANY;
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
 
 	// Listen for incoming requests
 
-	printf("Sender waiting for requester on port %ld\n", requester_port);
+	printf("Sender waiting for requester on port %ld\n", sender_port);
 	fflush(stdout);
 
 	char buf_send_packet[MAX_DATA];
@@ -205,13 +206,11 @@ int main(int argc, char **argv)
 			send_packet.length = (unsigned int)filestr.gcount();
 			if (debug)
 			{
-				printf("Packet:\n");
-				printf("%c",send_packet.type);
-				printf("\n");
-				printf("%d",send_packet.seq);
-				printf("\n");
-				printf("%d",send_packet.length);
-				printf("\n");
+				printf("Packet being sent:\n");
+				printf("%c %d %d\n",
+						send_packet.type,
+						send_packet.seq,
+						send_packet.length);
 			}
 
 			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];

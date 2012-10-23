@@ -36,22 +36,3 @@ struct Packet
 	}
 };
 
-//void send_packets(char* filename, bool debug)
-//{
-//	std::fstream filestr;
-//
-//	filestr.open (filename, std::fstream::out);
-//
-//	// This should be a while loop
-//	Packet packet;
-//	packet.type = 'R';
-//	filestr >> packet.payload;
-//	packet.length = std::fstream::gcount();
-//
-//	if (debug)
-//	{
-//		printf("Packet length: %d", packet.length);
-//	}
-//
-//	filestr.close();
-//}
