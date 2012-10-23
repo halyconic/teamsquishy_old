@@ -220,6 +220,12 @@ int main(int argc, char **argv)
 
 	// Listen for packets (Listen until end packet)
 
+	if (debug)
+	{
+		printf("The port is %lu\n", port);
+		fflush(stdout);
+	}
+
 	// Own address
 	requester_addr.sin_family = AF_INET;
 	requester_addr.sin_port = htons(port);
@@ -235,7 +241,7 @@ int main(int argc, char **argv)
 
 	if (debug)
 	{
-		printf("Requester waiting for sender on port %d\n", port);
+		printf("Requester waiting for sender on port %lu\n", port);
 		fflush(stdout);
 	}
 
