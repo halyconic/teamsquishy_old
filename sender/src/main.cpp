@@ -173,6 +173,8 @@ int main(int argc, char **argv)
 	printf("Sender waiting for requester on port %ld\n", requester_port);
 	fflush(stdout);
 
+	char buf_send_packet[MAX_DATA];
+
 	while (1)
 	{
 		bytes_read = recvfrom(sock, recv_data, sizeof(packet), 0,
@@ -187,18 +189,29 @@ int main(int argc, char **argv)
 			std::fstream filestr;
 			filestr.open ((char*)recv_packet.payload, std::fstream::out);
 
+			unsigned int i = 0;
 			/*
 			 * CONTAIN IN WHILE LOOP
 			 */
 			Packet send_packet;
 			send_packet.type = 'R';
+			send_packet.seq = i;
 			filestr >> send_packet.payload;
-//			send_packet.length =
-//			if (debug)
-//				printf("Packet length: %d", packet.length);
+			send_packet.length = (unsigned int)filestr.gcount();
+			if (debug)
+				printf("Packet length: %d", send_packet.length);
 
-//			sendto(sock, send_data, packet.length + MAX_HEADER, 0,
-//					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
+			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
+
+			// Copy to byte form (inefficient)
+			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
+			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
+			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
+			memcpy(&buf_send_packet[9], &send_packet.payload, send_packet.length);
+			i++;
+
+			sendto(sock, packet, packet.length + MAX_HEADER, 0,
+					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
 			/*
 			 * CONTAIN IN WHILE LOOP
 			 */
