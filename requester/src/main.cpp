@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "tracker.h"
+#include "packet.h"
 
 int main(int argc, char **argv)
 {
@@ -139,6 +140,39 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/////////////////
+	//
+	// Set up socket connection
+	//
+	/////////////////
+
+	int sock;
+	int bytes_read; // <- note how this is now on its own line!
+	socklen_t addr_len; // <- and this too, with a different type.
+	char send_data[MAX_DATA];
+
+	struct sockaddr_in requester_addr, sender_addr;
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
+		perror("Socket");
+		exit(1);
+	}
+
+	requester_addr.sin_family = AF_INET;
+	requester_addr.sin_port = htons(port);
+	requester_addr.sin_addr.s_addr = INADDR_ANY;
+	bzero(&(requester_addr.sin_zero), 8);
+
+	// Bind port to listen on
+	if (bind(sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
+	{
+		perror("Bind");
+		exit(1);
+	}
+
+	addr_len = sizeof(struct sockaddr);
+
 	// Make requests
 
 	unsigned int number_of_parts = 0;
@@ -148,6 +182,25 @@ int main(int argc, char **argv)
 		if (strcmp(file_option, tracker[i].filename) == 0)
 		{
 			// Send request
+
+			Packet send_packet;
+			send_packet.type = 'R';
+			send_packet.seq = 0;
+			send_packet.length = 0;
+			if (debug)
+				printf("Packet length: %d\n", send_packet.length);
+
+			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
+
+			// Copy to byte form (inefficient)
+			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
+			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
+			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
+			memcpy(&buf_send_packet[9], &send_packet.payload, send_packet.length);
+			i++;
+
+			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
+					(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
 		}
 	}
 
@@ -164,54 +217,105 @@ int main(int argc, char **argv)
 	// Print out to file
 
 
-	 // Initialize the server to be ready to send
+	// Initialize the server to be ready to send
 
 
-	int sock;
-	int bytes_read; // <- note how this is now on its own line!
-	socklen_t addr_len; // <- and this too, with a different type.
-	char recv_data[1024];
+	//int sock;
+//	int bytes_read; // <- note how this is now on its own line!
+//	socklen_t addr_len; // <- and this too, with a different type.
+//	char recv_data[1024];
+//
+//	struct sockaddr_in server_addr, client_addr;
+//
+//	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+//	{
+//		perror("Socket");
+//		exit(1);
+//	}
+//
+//	server_addr.sin_family = AF_INET;
+//	server_addr.sin_port = htons(port);
+//	server_addr.sin_addr.s_addr = INADDR_ANY;
+//	bzero(&(server_addr.sin_zero), 8);
+//
+//	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
+//			== -1)
+//	{
+//		perror("Bind");
+//		exit(1);
+//	}
+//
+//	addr_len = sizeof(struct sockaddr);
+//
+//	printf("\nUDPServer Waiting for client on port %d", port);
+//	fflush(stdout);
+//
+//	while (1)
+//	{
+//		bytes_read = recvfrom(sock, recv_data, 1024, 0,
+//				(struct sockaddr *) &client_addr, &addr_len);
+//
+//		recv_data[bytes_read] = '\0';
+//
+//		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
+//				client_addr.sin_port));
+//
+//		// print out the string array
+//		printf("%s", recv_data);
+//		fflush(stdout);
+//	}
+	/**/
 
-	struct sockaddr_in server_addr, client_addr;
 
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-	{
-		perror("Socket");
-		exit(1);
-	}
+	//	/*
+	//	 * Initialize the client to request
+	//	 */
 
-	server_addr.sin_family = AF_INET;
+/*	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(server_addr.sin_zero), 8);
 
-	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
-			== -1)
+	int sock;
+	struct sockaddr_in server_addr;
+	struct hostent *host;
+	char send_data[1024];
+
+	if (debug)
 	{
-		perror("Bind");
+		host = (struct hostent *) gethostbyname(arg_debug);
+
+		if ((struct hostent *) host == NULL)
+		{
+			printf("Host was not found by the name of %s\n", arg_debug);
+			exit(1);
+		}
+	}
+	else
+		host = (struct hostent *) gethostbyname((char *)"127.0.0.1");
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
 		exit(1);
 	}
 
-	addr_len = sizeof(struct sockaddr);
-
-	printf("\nUDPServer Waiting for client on port %d", port);
-	fflush(stdout);
+	// Where we are sending to
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(requester_port);
+	server_addr.sin_addr = *((struct in_addr *)host->h_addr);
+	bzero(&(server_addr.sin_zero),8); // TODO: convert to memset
 
 	while (1)
 	{
-		bytes_read = recvfrom(sock, recv_data, 1024, 0,
-				(struct sockaddr *) &client_addr, &addr_len);
+		printf("Type Something (q or Q to quit):");
+		gets(send_data);
 
-		recv_data[bytes_read] = '\0';
+		if ((strcmp(send_data , "q") == 0) || strcmp(send_data , "Q") == 0)
+			break;
 
-		printf("\n(%s , %d) said : ", inet_ntoa(client_addr.sin_addr), ntohs(
-				client_addr.sin_port));
-
-		// print out the string array
-		printf("%s", recv_data);
-		fflush(stdout);
-	}
-	/**/
-	return 0;
+		else
+			sendto(sock, send_data, strlen(send_data), 0,
+					(struct sockaddr *) &server_addr, sizeof(struct sockaddr));
+	}*/
 }
 
