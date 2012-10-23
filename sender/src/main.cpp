@@ -179,6 +179,9 @@ int main(int argc, char **argv)
 		bytes_read = recvfrom(sock, recv_data, sizeof(recv_data), 0,
 			(struct sockaddr *) &requester_addr, &addr_len);
 
+		if (debug)
+			printf("Packet received!\n");
+
 		Packet recv_packet = recv_data;
 
 		if (recv_packet.type == 'R')
@@ -203,11 +206,11 @@ int main(int argc, char **argv)
 			if (debug)
 			{
 				printf("Packet:\n");
-				printf(send_packet.type);
+				printf("%c",send_packet.type);
 				printf("\n");
-				printf(send_packet.seq);
+				printf("%d",send_packet.seq);
 				printf("\n");
-				printf(send_packet.length);
+				printf("%d",send_packet.length);
 				printf("\n");
 			}
 
