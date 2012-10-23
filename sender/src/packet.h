@@ -5,6 +5,8 @@ const int MAX_DATA = MAX_HEADER + MAX_PAYLOAD;
 
 #include <fstream>
 
+#include <stdio.h>
+
 // Packet used for receiving data
 struct Packet
 {
@@ -24,7 +26,8 @@ struct Packet
 		seq((int) (data[1])),
 		length((int) (data[5]))
 	{
-		memcpy(payload, &data[9], sizeof(payload));
+		payload[0] = data[9];
+		//memcpy(payload, &data[9], sizeof(payload));
 	};
 
 	Packet(char t, unsigned int s, unsigned int l, char p[MAX_PAYLOAD]) :

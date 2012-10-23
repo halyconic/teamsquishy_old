@@ -166,6 +166,11 @@ int main(int argc, char **argv)
 			ip_lookup = strcat(tracker[i].machinename, domain);
 			send_ent = (struct hostent *) gethostbyname(ip_lookup);
 
+			if (debug)
+			{
+				printf("IP lookup: %s\n", ip_lookup);
+			}
+
 			// Verify sender exists
 			if ((struct hostent *) send_ent == NULL)
 			{
@@ -191,16 +196,24 @@ int main(int argc, char **argv)
 						send_packet.type,
 						send_packet.seq,
 						send_packet.length);
-				printf("Payload: %s\n", send_packet.payload);
+				//printf("Payload: %s\n", send_packet.payload);
 			}
 
-			char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
+			char* buf_send_packet = new char[strlen(file_option) + MAX_HEADER];
+
+			if (strlen(file_option) < MAX_PAYLOAD)
+			{
+				buf_send_packet[strlen(file_option)] = '\0';
+			}
 
 			// Copy to byte form (inefficient)
 			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
 			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
 			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
 			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
+
+			if (debug)
+				printf("Payload: %s\n", &buf_send_packet[9]);
 
 			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
 					(struct sockaddr *)&sender_addr, sizeof(struct sockaddr));
