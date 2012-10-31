@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 	// Own address
 	sender_addr.sin_family = AF_INET;
 	sender_addr.sin_port = htons(sender_port);
-	sender_addr.sin_addr.s_addr = INADDR_ANY;
+	sender_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bzero(&(sender_addr.sin_zero), 8);
 
 	// Bind port to listen on
@@ -191,6 +191,10 @@ int main(int argc, char **argv)
 					recv_packet.seq,
 					recv_packet.length);
 			printf("Payload: %s\n", recv_packet.payload);
+			printf("Raw payload: %s\n", &recv_data[9]);
+		    printf("Origin: %s %u\n",
+				   inet_ntoa(requester_addr.sin_addr),
+				   ntohs(requester_addr.sin_port));
 		}
 
 		if (recv_packet.type == 'R')
@@ -224,6 +228,9 @@ int main(int argc, char **argv)
 							send_packet.seq,
 							send_packet.length);
 					printf("Payload: %s\n", send_packet.payload);
+				    printf("Destination: %s %u\n",
+						   inet_ntoa(sender_addr.sin_addr),
+						   ntohs(sender_addr.sin_port));
 				}
 
 				char* buf_send_packet = new char[send_packet.length + MAX_HEADER];

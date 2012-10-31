@@ -124,15 +124,14 @@ int main(int argc, char **argv)
 	}
 
 	// Set up socket connection
-
-	int sock;
+	int send_sock, recv_sock;
 	struct sockaddr_in requester_addr, sender_addr;
 	struct hostent* send_ent;
 	char recv_data[MAX_DATA];
 	int bytes_read;
 	socklen_t addr_len;
 
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	if ((send_sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	{
 		perror("Socket");
 		exit(1);
@@ -179,7 +178,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 
-			// Set up address
+			// Set up remote address
 			sender_addr.sin_port = htons(tracker[i].port);
 			sender_addr.sin_addr = *((struct in_addr *)send_ent->h_addr);
 			bzero(&(sender_addr.sin_zero), 8);
@@ -192,11 +191,10 @@ int main(int argc, char **argv)
 			if (debug)
 			{
 				printf("Packet being sent:\n");
-				printf("%c %d %d\n",
-						send_packet.type,
-						send_packet.seq,
-						send_packet.length);
-				//printf("Payload: %s\n", send_packet.payload);
+				send_packet.print();
+			    printf("Destination: %s %u\n",
+					   inet_ntoa(sender_addr.sin_addr),
+					   ntohs(sender_addr.sin_port));
 			}
 
 			char* buf_send_packet = new char[strlen(file_option) + MAX_HEADER];
@@ -213,9 +211,9 @@ int main(int argc, char **argv)
 			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
 
 			if (debug)
-				printf("Payload: %s\n", &buf_send_packet[9]);
+				printf("Raw payload: %s\n", &buf_send_packet[9]);
 
-			sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
+			sendto(send_sock, buf_send_packet, sizeof(buf_send_packet), 0,
 					(struct sockaddr *)&sender_addr, sizeof(struct sockaddr));
 
 			if (debug)
@@ -241,12 +239,26 @@ int main(int argc, char **argv)
 
 	// Own address
 	requester_addr.sin_family = AF_INET;
-	requester_addr.sin_port = htons(port);
-	requester_addr.sin_addr.s_addr = INADDR_ANY;
+	requester_addr.sin_port = htons(port);// requester_addr.sin_port = htons(0);
+	requester_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bzero(&(requester_addr.sin_zero), 8);
 
+	if ((recv_sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
+		perror("Socket");
+		exit(1);
+	}
+
+	// If talking to 'echo'
+	if (debug && strcmp(arg_debug, "echo") == 0)
+	{
+		printf("Echo mode: Listening for packet\n");
+		bytes_read = recvfrom(send_sock, recv_data, sizeof(recv_data), 0,
+			(struct sockaddr *) &sender_addr, &addr_len);
+	}
+
 	// Bind port to listen on
-	if (bind(sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
+	if (bind(recv_sock, (struct sockaddr *) &requester_addr, sizeof(struct sockaddr)) == -1)
 	{
 		perror("Bind");
 		exit(1);
@@ -260,7 +272,7 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		bytes_read = recvfrom(sock, recv_data, sizeof(recv_data), 0,
+		bytes_read = recvfrom(recv_sock, recv_data, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
 
 		printf("Packet received\n");
@@ -275,17 +287,20 @@ int main(int argc, char **argv)
 			 */
 			if (debug)
 			{
-				printf("Packet being received:\n");
-				printf("%c %d %d\n",
-						recv_packet.type,
-						recv_packet.seq,
-						recv_packet.length);
-				printf("Payload: %s\n", recv_packet.payload);
+				printf("Packet received:\n");
+				recv_packet.print();
 			}
 		}
 		else
 		{
+			if (debug)
+			{
+				printf("Unexpected packet received:\n");
+				recv_packet.print();
+				// Print packet contents
+			}
 			// Drop packet
+			printf("Unexpected packet was dropped\n");
 		}
 	}
 

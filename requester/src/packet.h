@@ -22,7 +22,8 @@ struct Packet
 	Packet(char data[MAX_DATA]) :
 		type(data[0]),
 		seq((int) (data[1])),
-		length((int) (data[5]))
+		length((int) (data[5])),
+		payload({0})
 	{
 		memcpy(payload, &data[9], sizeof(payload));
 	};
@@ -30,9 +31,20 @@ struct Packet
 	Packet(char t, unsigned int s, unsigned int l, char p[MAX_PAYLOAD]) :
 		type(t),
 		seq(s),
-		length(l)
+		length(l),
+		payload({0})
 	{
 		memcpy(payload, p, sizeof(payload));
+	}
+
+	// TODO: This does not work if payload is full!!!
+	void print()
+	{
+		printf("%c %d %d\n%s\n",
+			type,
+			seq,
+			length,
+			payload);
 	}
 };
 

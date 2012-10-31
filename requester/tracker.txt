@@ -1,3 +1,0 @@
-hello.txt 3 mumble-32 5000
-split.txt 1 mumble-32 5000
-split.txt 2 mumble-32 5002
