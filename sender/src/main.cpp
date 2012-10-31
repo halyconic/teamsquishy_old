@@ -197,6 +197,9 @@ int main(int argc, char **argv)
 				   ntohs(requester_addr.sin_port));
 		}
 
+		// Set destination port of requester
+		requester_addr.sin_port = htons(requester_port);
+
 		if (recv_packet.type == 'R')
 		{
 			// Break requested file into packets
@@ -229,8 +232,8 @@ int main(int argc, char **argv)
 							send_packet.length);
 					printf("Payload: %s\n", send_packet.payload);
 				    printf("Destination: %s %u\n",
-						   inet_ntoa(sender_addr.sin_addr),
-						   ntohs(sender_addr.sin_port));
+						   inet_ntoa(requester_addr.sin_addr),
+						   ntohs(requester_addr.sin_port));
 				}
 
 				char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
