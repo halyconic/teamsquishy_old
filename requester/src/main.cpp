@@ -204,6 +204,13 @@ int main(int argc, char **argv)
 				buf_send_packet[strlen(file_option)] = '\0';
 			}
 
+			// Set the optimal size of the packet to send
+			unsigned int packet_size =
+					  sizeof(char)
+					+ sizeof(unsigned int)
+					+ sizeof(unsigned int)
+					+ strlen(file_option);
+
 			// Copy to byte form (inefficient)
 			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
 			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
@@ -213,8 +220,8 @@ int main(int argc, char **argv)
 			if (debug)
 				printf("Raw payload: %s\n", &buf_send_packet[9]);
 
-			sendto(send_sock, buf_send_packet, sizeof(buf_send_packet), 0,
-					(struct sockaddr *)&sender_addr, sizeof(struct sockaddr));
+			sendto(send_sock, buf_send_packet, packet_size, 0,
+					(struct sockaddr *) &sender_addr, sizeof(struct sockaddr));
 
 			if (debug)
 				printf("Packet sent\n");

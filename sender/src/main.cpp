@@ -190,6 +190,7 @@ int main(int argc, char **argv)
 					recv_packet.type,
 					recv_packet.seq,
 					recv_packet.length);
+			printf("Bytes read: %d\n", bytes_read);
 			printf("Payload: %s\n", recv_packet.payload);
 			printf("Raw payload: %s\n", &recv_data[9]);
 		    printf("Origin: %s %u\n",
