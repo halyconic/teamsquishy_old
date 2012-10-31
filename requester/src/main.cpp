@@ -185,9 +185,9 @@ int main(int argc, char **argv)
 
 			// Form packet
 			Packet send_packet;
-			send_packet.type = 'R';
-			send_packet.seq = 0;
-			send_packet.length = 0;
+			send_packet.type() = 'R';
+			send_packet.seq() = 0;
+			send_packet.length() = 0;
 			if (debug)
 			{
 				printf("Packet being sent:\n");
@@ -212,9 +212,9 @@ int main(int argc, char **argv)
 					+ strlen(file_option);
 
 			// Copy to byte form (inefficient)
-			memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
-			memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
-			memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
+			memcpy(&buf_send_packet[0], &send_packet.type(), sizeof(char));
+			memcpy(&buf_send_packet[1], &send_packet.seq(), sizeof(unsigned int));
+			memcpy(&buf_send_packet[5], &send_packet.length(), sizeof(unsigned int));
 			memcpy(&buf_send_packet[9], file_option, strlen(file_option));
 
 			if (debug)
@@ -279,14 +279,14 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		bytes_read = recvfrom(recv_sock, recv_data, sizeof(recv_data), 0,
+		Packet recv_packet;
+
+		bytes_read = recvfrom(recv_sock, recv_packet, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
 
 		printf("Packet received\n");
 
-		Packet recv_packet = recv_data;
-
-		if (recv_packet.type == 'D')
+		if (recv_packet.type() == 'D')
 		{
 			unsigned int i = 0;
 			/*

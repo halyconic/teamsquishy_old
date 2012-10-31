@@ -33,22 +33,6 @@
  */
 int main(int argc, char **argv)
 {
-	_Packet p;
-
-	p.type() = 'R';
-	p.seq() = 11;
-	p.length() = 2;
-	strcpy(p.payload(), "hi");
-
-	printf(p);
-	printf("\n%c\n", p.type());
-	printf("%c\n", p[0]);
-	printf("%s\n", &p[9]);
-	printf("%ud\n", p.seq());
-	printf("%ud\n", p.length());
-	printf("%ud\n", p[1]);
-	printf("%ud\n", p[5]);
-
 	// Handle arguments
 
 	// If no commands, do nothing
@@ -194,20 +178,20 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		bytes_read = recvfrom(sock, recv_data, sizeof(recv_data), 0,
-			(struct sockaddr *) &requester_addr, &addr_len);
+		Packet recv_packet;
 
-		Packet recv_packet = recv_data;
+		bytes_read = recvfrom(sock, recv_packet, sizeof(recv_data), 0,
+			(struct sockaddr *) &requester_addr, &addr_len);
 
 		if (debug)
 		{
 			printf("Packet being received:\n");
 			printf("%c %d %d\n",
-					recv_packet.type,
-					recv_packet.seq,
-					recv_packet.length);
+					recv_packet.type(),
+					recv_packet.seq(),
+					recv_packet.length());
 			printf("Bytes read: %d\n", bytes_read);
-			printf("Payload: %s\n", recv_packet.payload);
+			printf("Payload: %s\n", recv_packet.payload());
 			printf("Raw payload: %s\n", &recv_data[9]);
 		    printf("Origin: %s %u\n",
 				   inet_ntoa(requester_addr.sin_addr),
@@ -217,15 +201,15 @@ int main(int argc, char **argv)
 		// Set destination port of requester
 		requester_addr.sin_port = htons(requester_port);
 
-		if (recv_packet.type == 'R')
+		if (recv_packet.type() == 'R')
 		{
 			// Break requested file into packets
-			char* recv_filename = (char*)recv_packet.payload; // Alias only, be careful!
+			char* recv_filename = (char*)recv_packet.payload(); // Alias only, be careful!
 			if (debug)
 				printf("Filename: %s\n", recv_filename);
 
 			std::fstream filestr;
-			filestr.open ((char*)recv_packet.payload, std::fstream::out);
+			filestr.open ((char*)recv_packet.payload(), std::fstream::out);
 
 			unsigned int i = 0;
 
@@ -236,30 +220,30 @@ int main(int argc, char **argv)
 			while (!filestr.eof())
 			{
 				Packet send_packet;
-				send_packet.type = 'D';
-				send_packet.seq = i;
-				filestr.write(send_packet.payload, sizeof(send_packet.payload));
-				send_packet.length = (unsigned int)filestr.gcount();
+				send_packet.type() = 'D';
+				send_packet.seq() = i;
+				filestr.write(send_packet.payload(), sizeof(send_packet.payload()));
+				send_packet.length() = (unsigned int)filestr.gcount();
 				if (debug)
 				{
 					printf("Packet being sent:\n");
 					printf("%c %d %d\n",
-							send_packet.type,
-							send_packet.seq,
-							send_packet.length);
-					printf("Payload: %s\n", send_packet.payload);
+							send_packet.type(),
+							send_packet.seq(),
+							send_packet.length());
+					printf("Payload: %s\n", send_packet.payload());
 				    printf("Destination: %s %u\n",
 						   inet_ntoa(requester_addr.sin_addr),
 						   ntohs(requester_addr.sin_port));
 				}
 
-				char* buf_send_packet = new char[send_packet.length + MAX_HEADER];
+				char* buf_send_packet = new char[send_packet.length() + MAX_HEADER];
 
 				// Copy to byte form (inefficient)
-				memcpy(&buf_send_packet[0], &send_packet.type, sizeof(char));
-				memcpy(&buf_send_packet[1], &send_packet.seq, sizeof(unsigned int));
-				memcpy(&buf_send_packet[5], &send_packet.length, sizeof(unsigned int));
-				memcpy(&buf_send_packet[9], &send_packet.payload, send_packet.length);
+				memcpy(&buf_send_packet[0], &send_packet.type(), sizeof(char));
+				memcpy(&buf_send_packet[1], &send_packet.seq(), sizeof(unsigned int));
+				memcpy(&buf_send_packet[5], &send_packet.length(), sizeof(unsigned int));
+				memcpy(&buf_send_packet[9], send_packet.payload(), send_packet.length());
 				i++;
 
 				sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
