@@ -40,22 +40,28 @@ struct Packet
 
 struct _Packet
 {
+	//  Aliased:
+	//	char type;
+	//	unsigned int seq;
+	//	unsigned int length;
+	//	char payload[MAX_PAYLOAD];
+
 	char& type()
 	{
 		return values_[0];
 	}
-//	unsigned int& seq()
-//	{
-//		return (unsigned int) values_[1];
-//	}
-//	unsigned int& length()
-//	{
-//		return (unsigned int) values_[5];
-//	}
-//	char*& payload()
-//	{
-//		return &values_[9];
-//	}
+	unsigned int& seq()
+	{
+		return (unsigned int&)values_[1];
+	}
+	unsigned int& length()
+	{
+		return (unsigned int&)values_[5];
+	}
+	char* payload()
+	{
+		return &values_[9];
+	}
 
 	char  operator [] (unsigned i) const { return this->values_[i]; }
 	char& operator [] (unsigned i)       { return this->values_[i]; }

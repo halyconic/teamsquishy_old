@@ -33,6 +33,22 @@
  */
 int main(int argc, char **argv)
 {
+	_Packet p;
+
+	p.type() = 'R';
+	p.seq() = 11;
+	p.length() = 2;
+	strcpy(p.payload(), "hi");
+
+	printf(p);
+	printf("\n%c\n", p.type());
+	printf("%c\n", p[0]);
+	printf("%s\n", &p[9]);
+	printf("%ud\n", p.seq());
+	printf("%ud\n", p.length());
+	printf("%ud\n", p[1]);
+	printf("%ud\n", p[5]);
+
 	// Handle arguments
 
 	// If no commands, do nothing
