@@ -144,7 +144,6 @@ int main(int argc, char **argv)
 	int sock;
 	int bytes_read; // <- note how this is now on its own line!
 	socklen_t addr_len; // <- and this too, with a different type.
-	char recv_data[MAX_DATA];
 
 	struct sockaddr_in requester_addr, sender_addr;
 
@@ -174,13 +173,11 @@ int main(int argc, char **argv)
 	printf("Sender waiting for requester on port %ld\n", sender_port);
 	fflush(stdout);
 
-	char buf_send_packet[MAX_DATA];
-
-	while (1)
+	if (1)
 	{
-		Packet recv_packet;
+		Packet send_packet, recv_packet;
 
-		bytes_read = recvfrom(sock, recv_packet, sizeof(recv_data), 0,
+		bytes_read = recvfrom(sock, recv_packet, MAX_DATA, 0,
 			(struct sockaddr *) &requester_addr, &addr_len);
 
 		if (debug)
@@ -192,7 +189,6 @@ int main(int argc, char **argv)
 					recv_packet.length());
 			printf("Bytes read: %d\n", bytes_read);
 			printf("Payload: %s\n", recv_packet.payload());
-			printf("Raw payload: %s\n", &recv_data[9]);
 		    printf("Origin: %s %u\n",
 				   inet_ntoa(requester_addr.sin_addr),
 				   ntohs(requester_addr.sin_port));
@@ -204,26 +200,37 @@ int main(int argc, char **argv)
 		if (recv_packet.type() == 'R')
 		{
 			// Break requested file into packets
-			char* recv_filename = (char*)recv_packet.payload(); // Alias only, be careful!
 			if (debug)
-				printf("Filename: %s\n", recv_filename);
+				printf("Filename: %s\n", recv_packet.payload());
 
-			std::fstream filestr;
-			filestr.open ((char*)recv_packet.payload(), std::fstream::out);
+			std::ifstream::pos_type file_size;
+			std::ifstream filestr;
 
-			unsigned int i = 0;
+			filestr.open (recv_packet.payload(), std::ios::in|std::ios::binary|std::ios::ate);
+
+			if (filestr.is_open() == false)
+			{
+				printf("Unable to open file %s\n", recv_packet.payload());
+				exit(-1);
+			}
+
+			char send_buffer[length];
+			file_size = filestr.tellg();
+			filestr.seekg(0, std::ios::beg);
 
 			Counter counter = Counter(rate);
 			/*
 			 * CONTAIN IN WHILE LOOP
 			 */
-			while (!filestr.eof())
+			while (filestr.good())
 			{
-				Packet send_packet;
+				if (debug)
+					printf("Beginning to read from file.\n");
+
 				send_packet.type() = 'D';
-				send_packet.seq() = i;
-				filestr.write(send_packet.payload(), sizeof(send_packet.payload()));
-				send_packet.length() = (unsigned int)filestr.gcount();
+				send_packet.seq() = seq_no;
+				filestr.read(send_packet.payload(), length);
+				send_packet.length() = (unsigned int) filestr.gcount();
 				if (debug)
 				{
 					printf("Packet being sent:\n");
@@ -231,24 +238,17 @@ int main(int argc, char **argv)
 							send_packet.type(),
 							send_packet.seq(),
 							send_packet.length());
-					printf("Payload: %s\n", send_packet.payload());
+					printf("Payload: %s", send_packet.payload());
 				    printf("Destination: %s %u\n",
 						   inet_ntoa(requester_addr.sin_addr),
 						   ntohs(requester_addr.sin_port));
 				}
 
-				char* buf_send_packet = new char[send_packet.length() + MAX_HEADER];
+				size_t packet_size = sizeof(char) + sizeof(unsigned int) + sizeof(unsigned int) + length;
+				sendto(sock, send_packet, packet_size, 0,
+						(struct sockaddr *) &requester_addr, sizeof(struct sockaddr));
 
-				// Copy to byte form (inefficient)
-				memcpy(&buf_send_packet[0], &send_packet.type(), sizeof(char));
-				memcpy(&buf_send_packet[1], &send_packet.seq(), sizeof(unsigned int));
-				memcpy(&buf_send_packet[5], &send_packet.length(), sizeof(unsigned int));
-				memcpy(&buf_send_packet[9], send_packet.payload(), send_packet.length());
-				i++;
-
-				sendto(sock, buf_send_packet, sizeof(buf_send_packet), 0,
-						(struct sockaddr *)&requester_addr, sizeof(struct sockaddr));
-
+				seq_no += length;
 				counter.wait();
 			}
 			/*

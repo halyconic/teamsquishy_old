@@ -277,14 +277,17 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 
+	Packet recv_packet;
+
 	while (1)
 	{
-		Packet recv_packet;
+		// reset packet to zeroes
+		memset(recv_packet, 0, sizeof(recv_packet));
 
 		bytes_read = recvfrom(recv_sock, recv_packet, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
 
-		printf("Packet received\n");
+		printf("Packet received:\n");
 
 		if (recv_packet.type() == 'D')
 		{
@@ -294,7 +297,6 @@ int main(int argc, char **argv)
 			 */
 			if (debug)
 			{
-				printf("Packet received:\n");
 				recv_packet.print();
 			}
 		}
@@ -302,7 +304,6 @@ int main(int argc, char **argv)
 		{
 			if (debug)
 			{
-				printf("Unexpected packet received:\n");
 				recv_packet.print();
 				// Print packet contents
 			}
