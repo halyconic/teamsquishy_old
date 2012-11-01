@@ -116,8 +116,6 @@ int main(int argc, char **argv)
 	// Parse tracker.txt
 
 	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
-	int num_active_senders = tracker.size();
-	printf("tracker size: %d\n", num_active_senders);
 
 	if (0 && debug)
 	{
@@ -155,11 +153,14 @@ int main(int argc, char **argv)
 
 	// Make requests
 
+	unsigned int num_active_senders = 0;
 	unsigned int number_of_parts = 0;
 	for (unsigned int i = 0; i < tracker.size(); i++)
 	{
 		if (strcmp(file_option, tracker[i].filename) == 0)
 		{
+			num_active_senders++;
+
 			if (debug)
 			{
 				printf("Entry acknowledged:\n");
@@ -291,7 +292,7 @@ int main(int argc, char **argv)
 
 	std::vector<Packet> packets_list;
 
-	while (1)
+	while (num_active_senders > 0)
 	{
 		Packet* recv_packet = new Packet();
 
@@ -308,7 +309,6 @@ int main(int argc, char **argv)
 			 */
 			if (debug)
 			{
-				printf("Packet received:\n");
 				recv_packet->print();
 			}
 		}
@@ -320,7 +320,6 @@ int main(int argc, char **argv)
 			 */
 			if (debug)
 			{
-				printf("Packet received:\n");
 				recv_packet->print();
 			}
 
@@ -347,12 +346,13 @@ int main(int argc, char **argv)
 	// sort packets by sequence number :)
 	std::sort (packets_list.begin(), packets_list.end(), compare);
 
-//	if (debug)
-//	{
-//		for (int i = 0; i < packets_list.size(); i++){
-//			printf("i: %d, %d", i, packets_list.at(i)->seq());
-//		}
-//	}
+	if (debug)
+	{
+		for (int i = 0; i < packets_list.size(); i++)
+		{
+			printf("index: %d, seq_no: %d\n", i, packets_list.at(i).seq());
+		}
+	}
 
 
 	// Print out to file

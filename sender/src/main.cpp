@@ -231,25 +231,28 @@ int main(int argc, char **argv)
 				send_packet.seq() = seq_no;
 				filestr.read(send_packet.payload(), length);
 				send_packet.length() = (unsigned int) filestr.gcount();
-				if (debug)
+				if (send_packet.length() !=0)
 				{
-					printf("Packet being sent:\n");
-					printf("%c %d %d\n",
-							send_packet.type(),
-							send_packet.seq(),
-							send_packet.length());
-					printf("Payload: %s", send_packet.payload());
-				    printf("Destination: %s %u\n",
-						   inet_ntoa(requester_addr.sin_addr),
-						   ntohs(requester_addr.sin_port));
+					if (debug)
+					{
+						printf("Packet being sent:\n");
+						printf("%c %d %d\n",
+								send_packet.type(),
+								send_packet.seq(),
+								send_packet.length());
+						printf("Payload: %s", send_packet.payload());
+						printf("Destination: %s %u\n",
+							   inet_ntoa(requester_addr.sin_addr),
+							   ntohs(requester_addr.sin_port));
+					}
+
+					size_t packet_size = sizeof(char) + sizeof(unsigned int) + sizeof(unsigned int) + length;
+					sendto(sock, send_packet, packet_size, 0,
+							(struct sockaddr *) &requester_addr, sizeof(struct sockaddr));
+
+					seq_no += length;
+					counter.wait();
 				}
-
-				size_t packet_size = sizeof(char) + sizeof(unsigned int) + sizeof(unsigned int) + length;
-				sendto(sock, send_packet, packet_size, 0,
-						(struct sockaddr *) &requester_addr, sizeof(struct sockaddr));
-
-				seq_no += length;
-				counter.wait();
 			}
 			/*
 			 * CONTAIN IN WHILE LOOP
