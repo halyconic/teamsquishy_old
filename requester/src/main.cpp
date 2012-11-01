@@ -20,11 +20,21 @@
 //#include <errno.h>
 #include <string.h>
 #include <cstdlib> //strtol
+#include <vectors>
 
 #include "tracker.h"
 #include "packet.h"
+#include <algorithm>
 
 const char* domain = ".cs.wisc.edu";
+
+bool compare (Packet p1, Packet p2)
+{
+	if (p1.seq() < p2.seq())
+		return true;
+	else
+		return false;
+}
 
 int main(int argc, char **argv)
 {
@@ -106,6 +116,8 @@ int main(int argc, char **argv)
 	// Parse tracker.txt
 
 	std::vector<TrackerEntry> tracker = get_tracker_from_file("tracker.txt", debug);
+	int num_active_senders = tracker.size();
+	printf("tracker size: %d\n", num_active_senders);
 
 	if (0 && debug)
 	{
@@ -277,16 +289,31 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 
+	std::vector<Packet> packets_list;
+
+
 	while (1)
 	{
-		Packet recv_packet;
+		Packet* recv_packet = new Packet();
 
-		bytes_read = recvfrom(recv_sock, recv_packet, sizeof(recv_data), 0,
+		bytes_read = recvfrom(recv_sock, *recv_packet, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
 
 		printf("Packet received\n");
 
-		if (recv_packet.type() == 'D')
+		if (recv_packet->type() == 'D')
+		{
+
+			/*
+			 * CONTAIN IN WHILE LOOP
+			 */
+			if (debug)
+			{
+				printf("Packet received:\n");
+				recv_packet->print();
+			}
+		}
+		else if (recv_packet->type() == 'E')
 		{
 			unsigned int i = 0;
 			/*
@@ -295,26 +322,42 @@ int main(int argc, char **argv)
 			if (debug)
 			{
 				printf("Packet received:\n");
-				recv_packet.print();
+				recv_packet->print();
 			}
+
+			num_active_senders--;
 		}
 		else
 		{
 			if (debug)
 			{
 				printf("Unexpected packet received:\n");
-				recv_packet.print();
+				recv_packet->print();
 				// Print packet contents
 			}
 			// Drop packet
 			printf("Unexpected packet was dropped\n");
 		}
+
+		// add packet to vector
+		packets_list.push_back(*recv_packet);
+
+		printf("added packet to list with sequence number: %d\n", recv_packet->seq());
+
 	}
 
-	// Reorder packets
+	// sort packets by sequence number :)
+	std::sort (packets_list.begin(), packets_list.end(), compare);
+
+	if (debug)
+	{
+		for (int i = 0; i < packets_list.size(); i++){
+			printf("i: %d, %d", i, packets_list.at(i)->seq());
+		}
+	}
+
 
 	// Print out to file
-
 
 	// Initialize the server to be ready to send
 }
