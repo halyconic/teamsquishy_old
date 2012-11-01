@@ -5,6 +5,7 @@ const int MAX_DATA = MAX_HEADER + MAX_PAYLOAD;
 
 #include <fstream>
 #include <stdio.h>
+#include <sys/time.h>
 
 // Packet used for receiving data
 struct Packet
@@ -48,4 +49,25 @@ struct Packet
 
 private:
 	char values_[MAX_DATA];
+};
+
+struct Super_Packet
+{
+	Packet *packet;
+	timeval time;
+
+	//time stamp
+	Super_Packet(Packet *p, timeval t)
+	{
+		packet = p;
+		time = t;
+	}
+
+	void print()
+	{
+		packet->print();
+
+		// time
+		printf("seconds: %d\n", time.tv_sec);
+	}
 };

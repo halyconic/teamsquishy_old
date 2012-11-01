@@ -9,6 +9,7 @@
 #include <ctype.h>  //isprint
 #include <stdlib.h> //exit
 #include <stdio.h>
+#include <ctime>
 
 //#include <sys/types.h>
 //#include <sys/socket.h>
@@ -25,19 +26,43 @@
 #include "tracker.h"
 #include "packet.h"
 #include <algorithm>
+#include <sys/time.h>
+#include <fstream>
 
 const char* domain = ".cs.wisc.edu";
 
-bool compare (Packet p1, Packet p2)
+bool compare (Super_Packet p1, Super_Packet p2)
 {
-	if (p1.seq() < p2.seq())
+	if (p1.packet->seq() < p2.packet->seq())
 		return true;
 	else
 		return false;
 }
 
+void printTime()
+{
+	//print out the current time
+	time_t now;
+	struct tm *tm;
+
+	now = time(0);
+	if ((tm = localtime (&now)) == NULL)
+	{
+		printf ("Error extracting time stuff\n");
+		return ;
+	}
+
+	printf ("%04d-%02d-%02d %02d:%02d:%02d\n",
+		tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+		tm->tm_hour, tm->tm_min, tm->tm_sec);
+}
+
 int main(int argc, char **argv)
 {
+
+
+
+
 	// Handle arguments
 
 	// If no commands, do nothing
@@ -290,8 +315,9 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 
-	std::vector<Packet> packets_list;
-
+	std::vector<Super_Packet> packets_list;
+	timeval begin_time;
+	gettimeofday(&begin_time, NULL);
 	while (num_active_senders > 0)
 	{
 		Packet* recv_packet = new Packet();
@@ -299,28 +325,43 @@ int main(int argc, char **argv)
 		bytes_read = recvfrom(recv_sock, *recv_packet, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
 
+		// get time stamp of current packet
+		struct timeval curr_time;
+//		struct timeval time_elapsed;
+
+		gettimeofday(&curr_time, NULL);
+
+
 		printf("Packet received:\n");
 
 		if (recv_packet->type() == 'D')
 		{
-
-			/*
-			 * CONTAIN IN WHILE LOOP
-			 */
 			if (debug)
 			{
 				recv_packet->print();
+				printTime();
+			}
+
+			// add packet to vector
+			packets_list.push_back(Super_Packet(recv_packet, curr_time));
+
+			if (debug){
+				printf("added packet to list with sequence number: %d\n", recv_packet->seq());
 			}
 		}
 		else if (recv_packet->type() == 'E')
 		{
-			unsigned int i = 0;
-			/*
-			 * CONTAIN IN WHILE LOOP
-			 */
 			if (debug)
 			{
 				recv_packet->print();
+				printTime();
+			}
+
+			// add packet to vector
+			packets_list.push_back(Super_Packet(recv_packet, curr_time));
+
+			if (debug){
+				printf("added packet to list with sequence number: %d\n", recv_packet->seq());
 			}
 
 			num_active_senders--;
@@ -336,10 +377,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		// add packet to vector
-		packets_list.push_back(*recv_packet);
 
-		printf("added packet to list with sequence number: %d\n", recv_packet->seq());
 
 	}
 
@@ -350,12 +388,88 @@ int main(int argc, char **argv)
 	{
 		for (int i = 0; i < packets_list.size(); i++)
 		{
-			printf("index: %d, seq_no: %d\n", i, packets_list.at(i).seq());
+			printf("index:%d, seq_no: %d\n", i, packets_list.at(i).packet->seq());
+			packets_list.at(i).print();
 		}
 	}
 
+	// SUMMARY
+	// total data packets received
+	printf("Total data packets received: %d\n", packets_list.size());
+
+	//total data bytes received
+	int sum_of_bytes;
+	for (int i = 0; i < packets_list.size(); i++)
+	{
+		sum_of_bytes += packets_list.at(i).packet->length();
+	}
+	printf("total data bytes received: %d\n", sum_of_bytes);
+
+	// average packets/second (not working right now)
+
+	int senderNumber = 1;
+	int numPacketsAtSender = 0;
+	float diff_time;
+	Super_Packet next_packet = packets_list.at(0);
+	for (int i = 0; i < packets_list.size(); i++)
+	{
+		if (packets_list.at(i).packet->type() == 'D')
+		{
+			numPacketsAtSender++;
+		}
+		else if (packets_list.at(i).packet->type() == 'E')
+		{
+			numPacketsAtSender++;
+
+			diff_time = packets_list.at(i).time.tv_sec - begin_time.tv_sec;
+			printf("average seconds for sender %d: %f\n", senderNumber, diff_time/numPacketsAtSender);
+
+			senderNumber++;
+			numPacketsAtSender = 0;
+			//next_packet = packets_list.at(i+1);
+
+		}
+	}
+
+	// duration of the test
+	int begin = begin_time.tv_sec;
+	int end = packets_list.back().time.tv_sec;
+	printf("duration of entire test: %d seconds\n", end-begin);
+
+
+
+
+	time_t now;
+	struct tm *tm;
+
+	now = time(0);
+	if ((tm = localtime (&now)) == NULL)
+	{
+		printf ("Error extracting time stuff\n");
+	}
+
+	printf ("%04d-%02d-%02d %02d:%02d:%02d\n",
+			tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+			tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+	//const clock_t begin_time = clock();
+	// do something
+	//std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC;*/
+
+
+
 
 	// Print out to file
+	 std::ofstream myfile;
+	  myfile.open (file_option);
+	for (int i = 0; i < packets_list.size(); i++){
+		myfile << packets_list.at(i).packet->payload();
+	}
+	  //myfile << "Writing this to a file.\n";
+	  myfile.close();
+
+
+
 
 	// Initialize the server to be ready to send
 }
