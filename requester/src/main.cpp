@@ -289,21 +289,11 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 
-<<<<<<< HEAD
-	Packet recv_packet;
-
-	while (1)
-	{
-		// reset packet to zeroes
-		memset(recv_packet, 0, sizeof(recv_packet));
-=======
 	std::vector<Packet> packets_list;
-
 
 	while (1)
 	{
 		Packet* recv_packet = new Packet();
->>>>>>> 48a2eee874f07b06ec457cdbb8beaa8ffc59496b
 
 		bytes_read = recvfrom(recv_sock, *recv_packet, sizeof(recv_data), 0,
 			(struct sockaddr *) &sender_addr, &addr_len);
@@ -330,12 +320,8 @@ int main(int argc, char **argv)
 			 */
 			if (debug)
 			{
-<<<<<<< HEAD
-				recv_packet.print();
-=======
 				printf("Packet received:\n");
 				recv_packet->print();
->>>>>>> 48a2eee874f07b06ec457cdbb8beaa8ffc59496b
 			}
 
 			num_active_senders--;
@@ -344,16 +330,11 @@ int main(int argc, char **argv)
 		{
 			if (debug)
 			{
-<<<<<<< HEAD
-				recv_packet.print();
-=======
 				printf("Unexpected packet received:\n");
 				recv_packet->print();
->>>>>>> 48a2eee874f07b06ec457cdbb8beaa8ffc59496b
+				printf("Unexpected packet was dropped\n");
 				// Print packet contents
 			}
-			// Drop packet
-			printf("Unexpected packet was dropped\n");
 		}
 
 		// add packet to vector
@@ -366,12 +347,12 @@ int main(int argc, char **argv)
 	// sort packets by sequence number :)
 	std::sort (packets_list.begin(), packets_list.end(), compare);
 
-	if (debug)
-	{
-		for (int i = 0; i < packets_list.size(); i++){
-			printf("i: %d, %d", i, packets_list.at(i)->seq());
-		}
-	}
+//	if (debug)
+//	{
+//		for (int i = 0; i < packets_list.size(); i++){
+//			printf("i: %d, %d", i, packets_list.at(i)->seq());
+//		}
+//	}
 
 
 	// Print out to file
